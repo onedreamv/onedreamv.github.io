@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SiliconFlow API余额查询</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a0933, #3c1b7a);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #f0f0f7;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: rgba(15, 10, 35, 0.85);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+        
+        header {
+            background: rgba(124, 58, 237, 0.15);
+            padding: 25px 30px;
+            border-bottom: 1px solid rgba(124, 58, 237, 0.3);
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #a070ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        header p {
+            color: #c0c0e0;
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .card {
+            padding: 30px;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #b8b5ff;
+            font-size: 1.1rem;
+        }
+        
+        .api-input {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(124, 58, 237, 0.3);
+            background: rgba(10, 5, 25, 0.7);
+            color: #f0f0f7;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(90deg, #7c3aed, #a070ff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 0 35px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 15px rgba(124, 58, 237, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #4a4a6d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .note {
+            color: #a9a7d0;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .result-container {
+            background: rgba(10, 5, 25, 0.6);
+            border-radius: 15px;
+            padding: 25px;
+            min-height: 200px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+        }
+        
+        .result-title {
+            color: #b8b5ff;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-content {
+            display: none;
+        }
+        
+        .balance-value {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #a070ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 10px 0;
+            text-align: center;
+        }
+        
+        .balance-label {
+            text-align: center;
+            color: #c0c0e0;
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+        }
+        
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .info-item {
+            background: rgba(124, 58, 237, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+        }
+        
+        .info-label {
+            font-size: 0.9rem;
+            color: #b8b5ff;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        
+        .loading {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(124, 58, 237, 0.2);
+            border-top: 5px solid #7c3aed;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .error {
+            display: none;
+            background: rgba(220, 80, 100, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            color: #ff9ba8;
+            margin-top: 20px;
+            border: 1px solid rgba(220, 80, 100, 0.4);
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(20, 15, 45, 0.6);
+            border-radius: 15px;
+            border: 1px solid rgba(124, 58, 237, 0.2);
+        }
+        
+        .instructions h3 {
+            color: #b8b5ff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+            color: #c0c0e0;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .api-input {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+                padding: 15px;
+            }
+            
+            .balance-value {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-wallet"></i> SiliconFlow API余额查询</h1>
+            <p>输入您的API Key以查询账户余额和使用信息</p>
+        </header>
+        
+        <div class="card">
+            <div class="input-group">
+                <label for="apiKey"><i class="fas fa-key"></i> API Key</label>
+                <div class="api-input">
+                    <input type="text" id="apiKey" placeholder="输入您的API Key (例如：sk-xxxxxxxxxxxxxxxxxxxxxxxx)">
+                    <button id="checkBalance">
+                        <i class="fas fa-search"></i> 查询余额
+                    </button>
+                </div>
+                <p class="note">
+                    <i class="fas fa-info-circle"></i> 您的API Key可以在SiliconFlow控制台的账户设置中找到
+                </p>
+            </div>
+            
+            <div class="result-container">
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在查询余额信息，请稍候...</p>
+                </div>
+                
+                <div class="result-content" id="resultContent">
+                    <h2 class="result-title"><i class="fas fa-coins"></i> 账户余额</h2>
+                    <div class="balance-value" id="balanceValue">¥ 0.00</div>
+                    <p class="balance-label">当前可用余额</p>
+                    
+                    <div class="user-info">
+                        <div class="info-item">
+                            <div class="info-label">用户ID</div>
+                            <div class="info-value" id="userId">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">账户状态</div>
+                            <div class="info-value" id="userStatus">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">充值余额</div>
+                            <div class="info-value" id="chargeBalance">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">总余额</div>
+                            <div class="info-value" id="totalBalance">-</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="error" id="errorMessage">
+                    <p><i class="fas fa-exclamation-triangle"></i> <span id="errorText">发生错误</span></p>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-lightbulb"></i> 使用说明</h3>
+                <ul>
+                    <li>在输入框中粘贴您的SiliconFlow API Key</li>
+                    <li>点击"查询余额"按钮获取账户信息</li>
+                    <li>余额信息包括可用余额、充值余额和总余额</li>
+                    <li>API Key仅用于查询，不会被存储或发送到其他服务器</li>
+                    <li>查询请求直接发送到SiliconFlow官方API接口</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const apiKeyInput = document.getElementById('apiKey');
+            const checkBalanceBtn = document.getElementById('checkBalance');
+            const loadingElement = document.getElementById('loading');
+            const resultContent = document.getElementById('resultContent');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+            const balanceValue = document.getElementById('balanceValue');
+            const userId = document.getElementById('userId');
+            const userStatus = document.getElementById('userStatus');
+            const chargeBalance = document.getElementById('chargeBalance');
+            const totalBalance = document.getElementById('totalBalance');
+            
+            checkBalanceBtn.addEventListener('click', async function() {
+                const apiKey = apiKeyInput.value.trim();
+                
+                if (!apiKey) {
+                    showError('请输入API Key');
+                    return;
+                }
+                
+                // 显示加载状态
+                loadingElement.style.display = 'flex';
+                resultContent.style.display = 'none';
+                errorMessage.style.display = 'none';
+                checkBalanceBtn.disabled = true;
+                
+                try {
+                    // 调用API接口
+                    const response = await fetch('https://api.siliconflow.cn/v1/user/info', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || '无法获取账户信息');
+                    }
+                    
+                    // 显示结果
+                    displayResults(data);
+                } catch (error) {
+                    showError(error.message || '查询失败，请检查API Key或网络连接');
+                } finally {
+                    loadingElement.style.display = 'none';
+                    checkBalanceBtn.disabled = false;
+                }
+            });
+            
+            function displayResults(data) {
+                if (data.code === 20000 && data.status && data.data) {
+                    const userData = data.data;
+                    
+                    // 更新UI
+                    balanceValue.textContent = `¥ ${userData.balance}`;
+                    userId.textContent = userData.id || '-';
+                    userStatus.textContent = userData.status === 'normal' ? '正常' : userData.status;
+                    chargeBalance.textContent = `¥ ${userData.chargeBalance}`;
+                    totalBalance.textContent = `¥ ${userData.totalBalance}`;
+                    
+                    resultContent.style.display = 'block';
+                } else {
+                    throw new Error(data.message || '无效的响应数据');
+                }
+            }
+            
+            function showError(message) {
+                errorText.textContent = message;
+                errorMessage.style.display = 'block';
+                resultContent.style.display = 'none';
+            }
+            
+            // 示例API Key（仅用于演示）
+            apiKeyInput.value = 'sk-xxxxxxxxxxxxxxxxxxxxxxxx';
+        });
+    </script>
+</body>
+</html>
